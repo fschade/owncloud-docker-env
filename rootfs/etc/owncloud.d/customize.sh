@@ -24,13 +24,19 @@ do
 	fi
 done
 
-echo "Installing wopi app..."
-git clone https://${GITHUB_ACCESS_TOKEN}@github.com/owncloud/wopi.git /mnt/data/apps/wopi
-occ app:enable wopi
+if [ ! -d /mnt/data/apps/wopi ]
+then
+	echo "Installing wopi app..."
+	git clone https://${GITHUB_ACCESS_TOKEN}@github.com/owncloud/wopi.git /mnt/data/apps/wopi
+	occ app:enable wopi
+fi
 
-echo "Installing msteamsbridge app..."
-git clone https://${GITHUB_ACCESS_TOKEN}@github.com/owncloud/msteamsbridge.git /mnt/data/apps/msteamsbridge
-occ app:enable msteamsbridge
+if [ ! -d /mnt/data/apps/msteamsbridge ]
+then
+	echo "Installing msteamsbridge app..."
+	git clone https://${GITHUB_ACCESS_TOKEN}@github.com/owncloud/msteamsbridge.git /mnt/data/apps/msteamsbridge
+	occ app:enable msteamsbridge
+fi
 
 echo "Installing web app..."
 occ market:install -n web

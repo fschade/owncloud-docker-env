@@ -34,9 +34,8 @@ services:
       - "OWNCLOUD_OIDC_CLIENT_ID=${OWNCLOUD_OIDC_CLIENT_ID-}"
       - "OWNCLOUD_OIDC_CLIENT_SECRET=${OWNCLOUD_OIDC_CLIENT_SECRET-}"
       - "OWNCLOUD_OIDC_SCOPES_API=${OWNCLOUD_OIDC_SCOPES_API-}"
-
     volumes:
-      - ./rootfs/etc/owncloud.d/customize.sh:/etc/owncloud.d/36-customize.sh
+      - ./rootfs/etc/owncloud.d/customize.sh:/etc/owncloud.d/98-customize.sh
       - ./rootfs/mnt/data/config/defaults.php:/mnt/data/config/docker.defaults.config.php
       - ./rootfs/mnt/data/config/wopi.php:/mnt/data/config/docker.wopi.config.php
       - ./rootfs/mnt/data/config/msteamsbridge.php:/mnt/data/config/docker.msteamsbridge.config.php
