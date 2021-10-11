@@ -1,0 +1,76 @@
+---
+version: "3.7"
+
+services:
+  traefik:
+    image: "traefik:2.4"
+    networks:
+      owncloud-net:
+        aliases:
+          - ${TRAEFIK_HOST:-}
+    command:
+      - "--certificatesResolvers.http.acme.email=${TRAEFIK_ACME_MAIL:-example@example.org}"
+      - "--certificatesResolvers.http.acme.storage=/certs/acme.json"
+      - "--certificatesResolvers.http.acme.httpChallenge.entryPoint=http"
+      - "--entryPoints.http.address=:80"
+      - "--entryPoints.https.address=:443"
+      - "--providers.docker.endpoint=unix:///var/run/docker.sock"
+      - "--providers.docker.exposedByDefault=false"
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "certs:/certs"
+    restart: always
+  oc10:
+    image: ${OWNCLOUD_DOCKER_IMAGE:-owncloud/server:latest}
+    environment:
+      - "TRAEFIK_HOST=${TRAEFIK_HOST-}"
+      - "TRAEFIK_ACME_MAIL=${TRAEFIK_ACME_MAIL-}"
+      - "GITHUB_ACCESS_TOKEN=${GITHUB_ACCESS_TOKEN-}"
+      - "OWNCLOUD_LICENSE_KEY=${OWNCLOUD_LICENSE_KEY-}"
+      - "OWNCLOUD_WOPI_TOKEN_KEY=${OWNCLOUD_WOPI_TOKEN_KEY-}"
+      - "OWNCLOUD_WOPI_OFFICE_ONLINE_SERVER=${OWNCLOUD_WOPI_OFFICE_ONLINE_SERVER-}"
+      - "OWNCLOUD_WOPI_PROXY_URL=${OWNCLOUD_WOPI_PROXY_URL-}"
+      - "OWNCLOUD_OIDC_PROVIDER_URL=${OWNCLOUD_OIDC_PROVIDER_URL-}"
+      - "OWNCLOUD_OIDC_POST_LOGOUT_REDIRECT_URL=${OWNCLOUD_OIDC_POST_LOGOUT_REDIRECT_URL-}"
+      - "OWNCLOUD_OIDC_CLIENT_ID=${OWNCLOUD_OIDC_CLIENT_ID-}"
+      - "OWNCLOUD_OIDC_CLIENT_SECRET=${OWNCLOUD_OIDC_CLIENT_SECRET-}"
+      - "OWNCLOUD_OIDC_SCOPES_API=${OWNCLOUD_OIDC_SCOPES_API-}"
+
+    volumes:
+      - ./rootfs/etc/owncloud.d/customize.sh:/etc/owncloud.d/36-customize.sh
+      - ./rootfs/mnt/data/config/defaults.php:/mnt/data/config/docker.defaults.config.php
+      - ./rootfs/mnt/data/config/wopi.php:/mnt/data/config/docker.wopi.config.php
+      - ./rootfs/mnt/data/config/msteamsbridge.php:/mnt/data/config/docker.msteamsbridge.config.php
+      - ./rootfs/mnt/data/config/oidc.php:/mnt/data/config/docker.oidc.config.php
+      - ./rootfs/var/www/owncloud/.htaccess:/var/www/owncloud/.htaccess
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.oc10-https-redirect.redirectscheme.scheme=https"
+      # http
+      - "traefik.http.routers.oc10.entrypoints=http"
+      - "traefik.http.routers.oc10.rule=Host(`${TRAEFIK_HOST:-}`)"
+      - "traefik.http.routers.oc10.middlewares=oc10-https-redirect"
+      # https
+      - "traefik.http.routers.oc10-secure.entrypoints=https"
+      - "traefik.http.routers.oc10-secure.rule=Host(`${TRAEFIK_HOST:-}`)"
+      - "traefik.http.routers.oc10-secure.tls=true"
+      - "traefik.http.routers.oc10-secure.tls.certresolver=http"
+      - "traefik.http.routers.oc10-secure.service=oc10"
+      - "traefik.http.services.oc10.loadbalancer.server.port=8080"
+      # wellknown
+      - "traefik.http.middlewares.wellknown.replacepath.path=/index.php/apps/openidconnect/config"
+      - "traefik.http.routers.wellknown.entrypoints=https"
+      - "traefik.http.routers.wellknown.tls.certresolver=http"
+      - "traefik.http.routers.wellknown.rule=Host(`${TRAEFIK_HOST:-}`) && Path(`/.well-known/openid-configuration`)"
+      - "traefik.http.routers.wellknown.middlewares=wellknown"
+      - "traefik.http.routers.wellknown.service=oc10"
+    restart: always
+
+volumes:
+  certs:
+
+networks:
+  owncloud-net:
