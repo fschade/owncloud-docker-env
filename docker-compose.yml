@@ -4,10 +4,6 @@ version: "3.7"
 services:
   traefik:
     image: "traefik:2.4"
-    networks:
-      owncloud-net:
-        aliases:
-          - ${TRAEFIK_HOST:-}
     command:
       - "--certificatesResolvers.http.acme.email=${TRAEFIK_ACME_MAIL:-example@example.org}"
       - "--certificatesResolvers.http.acme.storage=/certs/acme.json"
@@ -71,6 +67,3 @@ services:
 
 volumes:
   certs:
-
-networks:
-  owncloud-net:
