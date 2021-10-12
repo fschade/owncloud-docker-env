@@ -28,6 +28,9 @@ if [ ! -d /mnt/data/apps/wopi ]
 then
 	echo "Installing wopi app..."
 	git clone https://${GITHUB_ACCESS_TOKEN}@github.com/owncloud/wopi.git /mnt/data/apps/wopi
+	# workaround: wopi.git master also has version 1.5.0, oc only uses apps in mnt/datta/apps/appname
+	# if the version is greater then same app in /var/www/owncloud/apps/wopi
+	rm -R /var/www/owncloud/apps/wopi
 	occ app:enable wopi
 fi
 
