@@ -31,6 +31,7 @@ then
 	# workaround: wopi.git master also has version 1.5.0, oc only uses apps in mnt/datta/apps/appname
 	# if the version is greater then same app in /var/www/owncloud/apps/wopi
 	rm -R /var/www/owncloud/apps/wopi
+	composer install --working-dir /mnt/data/apps/wopi
 	occ app:enable wopi
 fi
 
@@ -38,6 +39,7 @@ if [ ! -d /mnt/data/apps/msteamsbridge ]
 then
 	echo "Installing msteamsbridge app..."
 	git clone https://${GITHUB_ACCESS_TOKEN}@github.com/owncloud/msteamsbridge.git /mnt/data/apps/msteamsbridge
+	composer install --working-dir /mnt/data/apps/msteamsbridge
 	occ app:enable msteamsbridge
 fi
 
